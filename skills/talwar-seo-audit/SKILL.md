@@ -59,7 +59,18 @@ $PY "${CLAUDE_PLUGIN_ROOT}/scripts/keys.py" set <KEY_NAME>
 
 Then ask with AskUserQuestion: **"Continue without it"** (recommended for a first run) or
 **"I'll add it first"**. If they choose to add it, wait for them to say it's done, re-run
-`status --json`, and only then continue. **Never ask the user to paste a key into the chat**
+`status --json`, and only then continue.
+
+For every key with `"set": true`, confirm it actually works before crawling:
+
+```bash
+$PY "${CLAUDE_PLUGIN_ROOT}/scripts/keys.py" verify <KEY_NAME>
+```
+
+If it prints `FAILED`, show the user its diagnosis lines verbatim (they say whether the key
+is mistyped, the API isn't enabled, or the key is restricted) and ask: **"Continue without
+it"** or **"I'll fix it first"**. Never crawl with a key you know is broken - the report
+would silently lack the data the user expects. **Never ask the user to paste a key into the chat**
 and never write a key into a file yourself - the `set` command prompts them privately in
 their own terminal. Skip this prompt entirely when every key is already set, or when the
 user passed `--no-keys`.

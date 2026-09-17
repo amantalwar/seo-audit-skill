@@ -11,6 +11,7 @@ Usage:
     python keys.py status                  # which keys are set, and where from
     python keys.py set PAGESPEED_API_KEY   # prompts for the value (hidden), saves to the key file
     python keys.py unset PAGESPEED_API_KEY
+    python keys.py verify PAGESPEED_API_KEY  # makes one real API call to confirm the key works
     python keys.py path                    # prints the key file location
 
 Keys are read in this order: environment variable, then ~/.talwar-seo-audit/.env,
@@ -29,6 +30,11 @@ KEYS = {
         "purpose": "Google PageSpeed Insights: field Core Web Vitals + Lighthouse scores for the homepage",
         "get_it": "https://developers.google.com/speed/docs/insights/v5/get-started",
         "free": True,
+        # (url, params_builder) used by `verify` - a cheap real call that fails fast on a bad key
+        "verify": (
+            "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+            lambda key: {"url": "https://example.com/", "strategy": "desktop", "category": "seo", "key": key},
+        ),
     },
 }
 
@@ -96,6 +102,8 @@ def cmd_status(as_json=False):
         if not r["set"]:
             print(f"            Get a{' free' if r['free'] else ''} key: {r['get_it']}")
             print(f"            Then run:  python {os.path.basename(__file__)} set {r['key']}")
+        else:
+            print(f"            Check it works:  python {os.path.basename(__file__)} verify {r['key']}")
         print()
 
 
@@ -122,6 +130,43 @@ def cmd_set(name):
     except OSError:
         pass  # Windows ignores POSIX bits; the file is under the user profile regardless
     print(f"Saved {name} to {KEY_FILE}")
+    print("Verifying...")
+    if not cmd_verify(name):
+        print(f"The key is saved but did not work. Fix it and run `set` again, or `unset {name}`.")
+
+
+def cmd_verify(name, quiet=False):
+    """Return True if the key works. Makes one real API request."""
+    if name not in KEYS:
+        sys.exit(f"Unknown key {name}. Known keys: {', '.join(KEYS)}")
+    value, src = load_keys([name])[name]
+    if not value:
+        print(f"{name} is not set. Run: python {os.path.basename(__file__)} set {name}")
+        return False
+    url, build = KEYS[name]["verify"]
+    try:
+        import requests  # only needed here; keeps `status` dependency-free
+        r = requests.get(url, params=build(value), timeout=60)
+        body = r.json() if r.headers.get("Content-Type", "").startswith("application/json") else {}
+    except Exception as e:  # noqa: BLE001
+        print(f"Could not reach the API to verify {name}: {e}")
+        return False
+    if r.status_code == 200 and "error" not in body:
+        if not quiet:
+            print(f"OK - {name} works (source: {src})")
+        return True
+    msg = (body.get("error") or {}).get("message") or f"HTTP {r.status_code}"
+    print(f"FAILED - {name} was rejected: {msg}")
+    hint = KEYS[name]["get_it"]
+    if "not valid" in msg.lower():
+        print("  The key itself is wrong (typo / truncated paste). Copy it again from the Google Cloud console.")
+    elif "has not been used" in msg.lower() or "disabled" in msg.lower():
+        print("  The key exists but the PageSpeed Insights API is not enabled on its project - enable it:")
+        print("  https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com")
+    elif "referer" in msg.lower() or "restricted" in msg.lower():
+        print("  The key has application restrictions (HTTP referrer / IP). Remove them or create an unrestricted key.")
+    print(f"  Docs: {hint}")
+    return False
 
 
 def cmd_unset(name):
@@ -149,6 +194,8 @@ def main():
         cmd_set(args[1])
     elif cmd == "unset" and len(args) > 1:
         cmd_unset(args[1])
+    elif cmd == "verify" and len(args) > 1:
+        sys.exit(0 if cmd_verify(args[1]) else 1)
     elif cmd == "path":
         print(KEY_FILE)
     else:

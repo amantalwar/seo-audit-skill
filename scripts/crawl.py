@@ -356,6 +356,11 @@ def pagespeed(url):
                 timeout=90,
             )
             data = r.json()
+            if "error" in data or r.status_code != 200:
+                msg = (data.get("error") or {}).get("message") or f"HTTP {r.status_code}"
+                out[strategy] = {"error": f"PageSpeed API rejected the request: {msg}. "
+                                          "Run `python scripts/keys.py verify PAGESPEED_API_KEY`."}
+                continue
             lh = data.get("lighthouseResult", {})
             cats = lh.get("categories", {})
             audits = lh.get("audits", {})
@@ -473,7 +478,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),

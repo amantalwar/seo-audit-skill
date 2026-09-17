@@ -78,7 +78,9 @@ Store a key from your own terminal (input is hidden, saved to `~/.talwar-seo-aud
 python scripts/keys.py set PAGESPEED_API_KEY
 ```
 
-`python scripts/keys.py status` shows what's configured. An environment variable of the
+`set` verifies the key with one real API call and tells you exactly what's wrong if it's
+rejected (typo, API not enabled on the project, or key restrictions). `python scripts/keys.py
+status` shows what's configured; `verify <KEY>` re-checks it. An environment variable of the
 same name also works and takes precedence. Never paste keys into the chat.
 
 ## What the report contains
