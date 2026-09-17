@@ -1,7 +1,7 @@
 # seo-audit-skill
 
 A [Claude Code](https://claude.com/claude-code) plugin that audits any website and produces a
-**prioritized SEO report as a PDF**.
+**prioritised SEO report as a PDF**.
 
 ```
 /talwar-seo-audit https://example.com
@@ -9,7 +9,7 @@ A [Claude Code](https://claude.com/claude-code) plugin that audits any website a
 
 - **No API keys required.** The crawler collects everything from the site itself. Set
   `PAGESPEED_API_KEY` (free from Google) and you also get Core Web Vitals field data.
-- **Specialist agents run in parallel**: technical SEO, content quality (E-E-A-T),
+- **Agents run in parallel**: technical SEO, content quality (E-E-A-T),
   Schema.org structured data, AI search (GEO), plus local, e-commerce, and international
   SEO when the site needs them.
 - **Every recommendation is testable and sourced.** Each finding has evidence from the crawl,
@@ -89,7 +89,7 @@ same name also works and takes precedence. Never paste keys into the chat.
 
 1. **Cover** - overall score, counts of critical / high / medium / low findings.
 2. **Executive summary** - one row per specialist with score and a plain-English summary, plus crawl facts.
-3. **Prioritized action plan** - top 15 findings ranked by severity weighted against effort.
+3. **Prioritised action plan** - top 15 findings ranked by severity weighted against effort.
 4. **Detailed findings** - per area: affected URLs, evidence, fix, how to test, source.
 5. **Appendix** - every crawled page with status, title/meta lengths, H1 count, word count, response time.
 
