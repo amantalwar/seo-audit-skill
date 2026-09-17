@@ -4,7 +4,7 @@ A [Claude Code](https://claude.com/claude-code) plugin that audits any website a
 **prioritized SEO report as a PDF**.
 
 ```
-/seo-audit https://example.com
+/talwar-seo-audit https://example.com
 ```
 
 - **No API keys required.** The crawler collects everything from the site itself. Set
@@ -24,7 +24,7 @@ Requires Claude Code and Python 3.10+.
 
 ```bash
 claude plugin marketplace add amantalwar/seo-audit-skill
-claude plugin install seo-audit@seo-audit-marketplace
+claude plugin install talwar-seo-audit@talwar-seo-audit-marketplace
 ```
 
 Python dependencies are installed automatically on first run, or install them yourself:
@@ -43,7 +43,7 @@ claude --plugin-dir ./seo-audit-skill
 ## Usage
 
 ```
-/seo-audit <url> [--max-pages N] [--out DIR] [--all] [--only a,b] [--skip a,b] [--allow-live]
+/talwar-seo-audit <url> [--max-pages N] [--out DIR] [--all] [--only a,b] [--skip a,b] [--allow-live]
 ```
 
 | Flag | Default | What it does |
@@ -57,9 +57,9 @@ claude --plugin-dir ./seo-audit-skill
 Examples:
 
 ```
-/seo-audit https://example.com
-/seo-audit example.com --max-pages 100 --all
-/seo-audit https://shop.example.com --only seo-ecommerce,seo-schema
+/talwar-seo-audit https://example.com
+/talwar-seo-audit example.com --max-pages 100 --all
+/talwar-seo-audit https://shop.example.com --only seo-ecommerce,seo-schema
 ```
 
 Optional - richer Core Web Vitals data:
@@ -81,7 +81,7 @@ Scores are heuristic prioritisation aids, not ranking predictions.
 ## How it works
 
 ```
-/seo-audit URL
+/talwar-seo-audit URL
    │
    ├─ scripts/crawl.py ──────────► site.json      (titles, metas, headings, links, JSON-LD,
    │                                               robots.txt, sitemap, llms.txt, hreflang,
@@ -105,7 +105,7 @@ writes the same findings schema, documented at the top of `scripts/render_pdf.py
 ```
 .claude-plugin/plugin.json      plugin manifest
 .claude-plugin/marketplace.json lets people install straight from this repo
-skills/seo-audit/SKILL.md       the /seo-audit orchestrator
+skills/talwar-seo-audit/SKILL.md  the /talwar-seo-audit orchestrator
 agents/*.md                     the seven specialists (generated from scripts/dev/build_agents.py)
 scripts/crawl.py                crawler → site.json
 scripts/query.py                compact views of site.json for agents
@@ -120,7 +120,7 @@ references/google-guidance.md   the only sources agents may cite (all URLs verif
 - **Change an agent's checklist**: edit `scripts/dev/build_agents.py` and run it. Editing
   `agents/*.md` directly also works, but the build script keeps the shared contract in sync.
 - **Add a specialist**: add an entry to `AGENTS` in `build_agents.py`, run it, and add a
-  row to the "Choose which specialists run" table in `skills/seo-audit/SKILL.md`.
+  row to the "Choose which specialists run" table in `skills/talwar-seo-audit/SKILL.md`.
 - **Restyle the PDF**: colours, fonts, and section order live in `scripts/render_pdf.py`.
 - **Add sources**: append to `references/google-guidance.md`. Keep to primary sources.
 

@@ -1,6 +1,6 @@
 ---
 name: seo-international
-description: International and multilingual SEO specialist for the seo-audit skill. Audits hreflang implementation (reciprocity, x-default, language/region codes), URL structure for locales, html lang, content-language headers, geo-redirects, and duplicate content across locales. Writes findings JSON. Only spawned when hreflang or locale signals are detected or the user requests it.
+description: International and multilingual SEO specialist for the talwar-seo-audit skill. Audits hreflang implementation (reciprocity, x-default, language/region codes), URL structure for locales, html lang, content-language headers, geo-redirects, and duplicate content across locales. Writes findings JSON. Only spawned when hreflang or locale signals are detected or the user requests it.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

@@ -1,10 +1,10 @@
 ---
-name: seo-audit
+name: talwar-seo-audit
 description: Run a full SEO audit of a website and produce a prioritized PDF report. Crawls the site (no API keys needed), runs specialist agents in parallel (technical SEO, content quality/E-E-A-T, Schema.org, AI search/GEO, and - when relevant - local, e-commerce, international), and renders a PDF with an action plan where every recommendation is testable and cites Google's own documentation. Use when the user asks for an SEO audit, site audit, SEO report, or "how is my site doing in search".
 argument-hint: <url> [--max-pages N] [--out DIR] [--all] [--skip agent,agent] [--only agent,agent] [--allow-live]
 ---
 
-# /seo-audit - website SEO audit → PDF
+# /talwar-seo-audit - website SEO audit → PDF
 
 You are the **orchestrator**. You crawl, delegate analysis to specialist subagents running in
 parallel, merge their findings, and render the PDF. You do not do the SEO analysis yourself.
@@ -76,7 +76,7 @@ Tell the user which agents will run and why in one line before spawning.
 ## 5. Spawn the specialists **in parallel**
 
 Issue **all Agent tool calls in a single message** so they run concurrently. For each
-selected agent use `subagent_type: "seo-audit:<agent-name>"` and this prompt (fill the
+selected agent use `subagent_type: "talwar-seo-audit:<agent-name>"` and this prompt (fill the
 placeholders with absolute paths):
 
 ```

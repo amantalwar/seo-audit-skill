@@ -1,6 +1,6 @@
 ---
 name: seo-ecommerce
-description: E-commerce SEO specialist for the seo-audit skill. Audits product and category pages: Product/Offer schema, merchant listing eligibility, URL structure for facets and variants, pagination, thin/duplicate product content, out-of-stock handling, and image markup. Writes findings JSON. Only spawned when e-commerce signals are detected or the user requests it.
+description: E-commerce SEO specialist for the talwar-seo-audit skill. Audits product and category pages: Product/Offer schema, merchant listing eligibility, URL structure for facets and variants, pagination, thin/duplicate product content, out-of-stock handling, and image markup. Writes findings JSON. Only spawned when e-commerce signals are detected or the user requests it.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

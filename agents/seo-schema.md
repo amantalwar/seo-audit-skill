@@ -1,6 +1,6 @@
 ---
 name: seo-schema
-description: Structured data specialist for the seo-audit skill. Detects, validates, and recommends Schema.org JSON-LD (Organization, Article, Product, LocalBusiness, Breadcrumb, etc.) against Google's structured data policies and required/recommended properties. Writes findings JSON.
+description: Structured data specialist for the talwar-seo-audit skill. Detects, validates, and recommends Schema.org JSON-LD (Organization, Article, Product, LocalBusiness, Breadcrumb, etc.) against Google's structured data policies and required/recommended properties. Writes findings JSON.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: seo-geo
-description: AI search / generative engine optimization specialist for the seo-audit skill. Audits AI-crawler access in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot...), llms.txt, passage-level citability, entity clarity, and readiness for Google AI Overviews, ChatGPT, Perplexity, and Copilot. Writes findings JSON.
+description: AI search / generative engine optimization specialist for the talwar-seo-audit skill. Audits AI-crawler access in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot...), llms.txt, passage-level citability, entity clarity, and readiness for Google AI Overviews, ChatGPT, Perplexity, and Copilot. Writes findings JSON.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

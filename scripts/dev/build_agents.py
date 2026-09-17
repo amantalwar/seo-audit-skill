@@ -71,7 +71,7 @@ AGENTS = {
     "seo-technical": {
         "category": "Technical SEO",
         "prefix": "TECH",
-        "description": "Technical SEO specialist for the seo-audit skill. Audits crawlability, indexability, HTTPS/redirects, canonicals, robots.txt, sitemaps, status codes, URL structure, mobile readiness, page speed signals, and internal linking from a site.json crawl. Writes findings JSON.",
+        "description": "Technical SEO specialist for the talwar-seo-audit skill. Audits crawlability, indexability, HTTPS/redirects, canonicals, robots.txt, sitemaps, status codes, URL structure, mobile readiness, page speed signals, and internal linking from a site.json crawl. Writes findings JSON.",
         "role": "You are a technical SEO engineer. You care about whether Googlebot can fetch, render, and index the right URLs efficiently.",
         "views": "overview, pages, robots, links, perf, heads (for canonical/robots meta), images",
         "checklist": """
@@ -94,7 +94,7 @@ AGENTS = {
     "seo-content": {
         "category": "Content Quality (E-E-A-T)",
         "prefix": "CONT",
-        "description": "Content quality and E-E-A-T specialist for the seo-audit skill. Evaluates helpfulness, depth, originality signals, author/experience/trust signals, titles and meta descriptions as snippets, heading structure, thin/duplicate content, and readability from a site.json crawl. Writes findings JSON.",
+        "description": "Content quality and E-E-A-T specialist for the talwar-seo-audit skill. Evaluates helpfulness, depth, originality signals, author/experience/trust signals, titles and meta descriptions as snippets, heading structure, thin/duplicate content, and readability from a site.json crawl. Writes findings JSON.",
         "role": "You are a content strategist who evaluates pages the way Google's 'helpful content' guidance and the Search Quality Rater Guidelines describe: is this made for people, does it demonstrate experience/expertise, is it trustworthy?",
         "views": "heads, content, pages, overview",
         "checklist": """
@@ -114,7 +114,7 @@ AGENTS = {
     "seo-schema": {
         "category": "Structured Data (Schema.org)",
         "prefix": "SCH",
-        "description": "Structured data specialist for the seo-audit skill. Detects, validates, and recommends Schema.org JSON-LD (Organization, Article, Product, LocalBusiness, Breadcrumb, etc.) against Google's structured data policies and required/recommended properties. Writes findings JSON.",
+        "description": "Structured data specialist for the talwar-seo-audit skill. Detects, validates, and recommends Schema.org JSON-LD (Organization, Article, Product, LocalBusiness, Breadcrumb, etc.) against Google's structured data policies and required/recommended properties. Writes findings JSON.",
         "role": "You are a structured-data engineer. You know which Schema.org types Google actually surfaces as rich results, which required properties each needs, and which features have been retired.",
         "views": "jsonld, overview, pages, heads (to infer page types)",
         "checklist": """
@@ -131,7 +131,7 @@ AGENTS = {
     "seo-geo": {
         "category": "AI Search (GEO)",
         "prefix": "GEO",
-        "description": "AI search / generative engine optimization specialist for the seo-audit skill. Audits AI-crawler access in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot...), llms.txt, passage-level citability, entity clarity, and readiness for Google AI Overviews, ChatGPT, Perplexity, and Copilot. Writes findings JSON.",
+        "description": "AI search / generative engine optimization specialist for the talwar-seo-audit skill. Audits AI-crawler access in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot...), llms.txt, passage-level citability, entity clarity, and readiness for Google AI Overviews, ChatGPT, Perplexity, and Copilot. Writes findings JSON.",
         "role": "You are an AI-search visibility specialist. You reason about how answer engines (Google AI Overviews/AI Mode, ChatGPT search, Perplexity, Bing Copilot) fetch, chunk, and cite web pages.",
         "views": "robots, content, heads, jsonld, overview",
         "checklist": """
@@ -148,7 +148,7 @@ AGENTS = {
     "seo-local": {
         "category": "Local SEO",
         "prefix": "LOC",
-        "description": "Local SEO specialist for the seo-audit skill. Audits NAP (name/address/phone) consistency, LocalBusiness schema, location/contact pages, opening hours, map embeds, and Google Business Profile readiness for brick-and-mortar and service-area businesses. Writes findings JSON. Only spawned when local signals are detected or the user requests it.",
+        "description": "Local SEO specialist for the talwar-seo-audit skill. Audits NAP (name/address/phone) consistency, LocalBusiness schema, location/contact pages, opening hours, map embeds, and Google Business Profile readiness for brick-and-mortar and service-area businesses. Writes findings JSON. Only spawned when local signals are detected or the user requests it.",
         "role": "You are a local-search consultant. You care about whether Google can confidently tie this website to a real business with a name, address, phone, hours, and category.",
         "views": "local, jsonld, heads, content, links",
         "checklist": """
@@ -165,7 +165,7 @@ AGENTS = {
     "seo-ecommerce": {
         "category": "E-commerce SEO",
         "prefix": "ECOM",
-        "description": "E-commerce SEO specialist for the seo-audit skill. Audits product and category pages: Product/Offer schema, merchant listing eligibility, URL structure for facets and variants, pagination, thin/duplicate product content, out-of-stock handling, and image markup. Writes findings JSON. Only spawned when e-commerce signals are detected or the user requests it.",
+        "description": "E-commerce SEO specialist for the talwar-seo-audit skill. Audits product and category pages: Product/Offer schema, merchant listing eligibility, URL structure for facets and variants, pagination, thin/duplicate product content, out-of-stock handling, and image markup. Writes findings JSON. Only spawned when e-commerce signals are detected or the user requests it.",
         "role": "You are an e-commerce SEO lead. You care about product discoverability in Google Search and Shopping, clean crawl paths through categories, and product pages that are unique and structured.",
         "views": "ecommerce, jsonld, heads, links, pages, images",
         "checklist": """
@@ -184,7 +184,7 @@ AGENTS = {
     "seo-international": {
         "category": "International SEO",
         "prefix": "INTL",
-        "description": "International and multilingual SEO specialist for the seo-audit skill. Audits hreflang implementation (reciprocity, x-default, language/region codes), URL structure for locales, html lang, content-language headers, geo-redirects, and duplicate content across locales. Writes findings JSON. Only spawned when hreflang or locale signals are detected or the user requests it.",
+        "description": "International and multilingual SEO specialist for the talwar-seo-audit skill. Audits hreflang implementation (reciprocity, x-default, language/region codes), URL structure for locales, html lang, content-language headers, geo-redirects, and duplicate content across locales. Writes findings JSON. Only spawned when hreflang or locale signals are detected or the user requests it.",
         "role": "You are an international SEO specialist. You care about serving the right language/region version to the right users without creating duplicate content or broken hreflang clusters.",
         "views": "hreflang, pages, heads, overview, robots",
         "checklist": """

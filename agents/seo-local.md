@@ -1,6 +1,6 @@
 ---
 name: seo-local
-description: Local SEO specialist for the seo-audit skill. Audits NAP (name/address/phone) consistency, LocalBusiness schema, location/contact pages, opening hours, map embeds, and Google Business Profile readiness for brick-and-mortar and service-area businesses. Writes findings JSON. Only spawned when local signals are detected or the user requests it.
+description: Local SEO specialist for the talwar-seo-audit skill. Audits NAP (name/address/phone) consistency, LocalBusiness schema, location/contact pages, opening hours, map embeds, and Google Business Profile readiness for brick-and-mortar and service-area businesses. Writes findings JSON. Only spawned when local signals are detected or the user requests it.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

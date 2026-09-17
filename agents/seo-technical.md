@@ -1,6 +1,6 @@
 ---
 name: seo-technical
-description: Technical SEO specialist for the seo-audit skill. Audits crawlability, indexability, HTTPS/redirects, canonicals, robots.txt, sitemaps, status codes, URL structure, mobile readiness, page speed signals, and internal linking from a site.json crawl. Writes findings JSON.
+description: Technical SEO specialist for the talwar-seo-audit skill. Audits crawlability, indexability, HTTPS/redirects, canonicals, robots.txt, sitemaps, status codes, URL structure, mobile readiness, page speed signals, and internal linking from a site.json crawl. Writes findings JSON.
 tools: Read, Write, Bash, Glob, Grep
 ---
 

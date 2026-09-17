@@ -1,6 +1,6 @@
 ---
 name: seo-content
-description: Content quality and E-E-A-T specialist for the seo-audit skill. Evaluates helpfulness, depth, originality signals, author/experience/trust signals, titles and meta descriptions as snippets, heading structure, thin/duplicate content, and readability from a site.json crawl. Writes findings JSON.
+description: Content quality and E-E-A-T specialist for the talwar-seo-audit skill. Evaluates helpfulness, depth, originality signals, author/experience/trust signals, titles and meta descriptions as snippets, heading structure, thin/duplicate content, and readability from a site.json crawl. Writes findings JSON.
 tools: Read, Write, Bash, Glob, Grep
 ---
 
