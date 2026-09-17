@@ -1,0 +1,20 @@
+# Audit outputs (site crawls, findings, PDFs) - never commit a client's data
+seo-audit-output/
+.seo-audit/
+*.pdf
+!docs/*.pdf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Claude settings
+.claude/settings.local.json

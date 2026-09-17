@@ -1,0 +1,23 @@
+{
+  "name": "seo-audit-marketplace",
+  "owner": {
+    "name": "Aman Talwar",
+    "url": "https://github.com/amantalwar"
+  },
+  "metadata": {
+    "description": "Marketplace for the seo-audit Claude Code plugin",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "seo-audit",
+      "source": "./",
+      "description": "Website SEO audit → prioritized PDF report with parallel specialist agents and Google-sourced recommendations.",
+      "version": "1.0.0",
+      "author": { "name": "Aman Talwar" },
+      "license": "MIT",
+      "keywords": ["seo", "audit", "pdf"],
+      "category": "marketing"
+    }
+  ]
+}
