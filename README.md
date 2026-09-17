@@ -174,3 +174,5 @@ adds a check should also add the primary source it relies on to `references/goog
 ## License
 
 [MIT](LICENSE)
+
+Built by [Aman Talwar](https://amantalwar.com).
