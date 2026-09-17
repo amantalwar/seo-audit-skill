@@ -472,6 +472,134 @@ def build_pdf(site, reports, out_path):
 # HTML twin (simple, self-contained)
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+# "Crawl blocked" report - produced when zero pages could be audited
+# ----------------------------------------------------------------------------
+
+NEXT_STEPS = {
+    "robots": [
+        "If you own this site: allow the auditor in robots.txt (add a 'User-agent: seo-audit-skill' block with 'Allow: /'), "
+        "or run the audit from a machine/agent the site already whitelists, then re-run.",
+        "If you don't own it: request written permission from the publisher, or use a tool the site explicitly "
+        "whitelists (see the list above). The auditor will not bypass robots.txt.",
+        "Google Search Console remains available to verified owners and is unaffected by these rules.",
+    ],
+    "http_forbidden": [
+        "The site is likely behind a bot-protection layer (CDN / WAF). If you own it, add an allow rule for the "
+        "user agent 'seo-audit-skill' or for your own IP address, then re-run.",
+        "Confirm the site loads normally in a browser - if it also fails there, the issue is not bot protection.",
+        "If you don't own the site, audit it through Google Search Console or a whitelisted tool instead.",
+    ],
+    "unreachable": [
+        "Check the domain spelling and that the site resolves in a browser.",
+        "If it works in a browser but not here, a firewall or DNS filter on this network may be blocking it.",
+        "Re-run once the site is reachable.",
+    ],
+    "no_html": [
+        "The URLs fetched did not return HTML (or returned error statuses). Try the exact URL of the homepage.",
+        "If the site is a single-page app that renders only in the browser, its HTML shell may still be auditable - "
+        "check that the server returns HTML for a plain GET request.",
+    ],
+    "unknown": ["Re-run with a specific page URL, or inspect site.json in the output folder for details."],
+}
+
+
+def build_blocked_pdf(site, blocked, out_path):
+    st = styles()
+    meta = site.get("meta", {})
+    domain = urlparse(meta.get("root", "")).netloc
+    generated = datetime.now().strftime("%d %b %Y, %H:%M")
+    doc = SimpleDocTemplate(out_path, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
+                            topMargin=18 * mm, bottomMargin=22 * mm,
+                            title=f"SEO Audit - {meta.get('root', '')} (crawl blocked)", author="seo-audit-skill")
+    doc.report_domain = domain
+    warn = colors.HexColor("#B54708")
+    flow = [
+        Spacer(1, 40 * mm),
+        Paragraph("SEO Audit Report", st["title"]),
+        Paragraph(esc(domain), ParagraphStyle("d", parent=st["subtitle"], fontSize=16, leading=20, textColor=ACCENT)),
+        Spacer(1, 4 * mm),
+        Paragraph(f"Generated {esc(generated)} &nbsp;|&nbsp; 0 pages crawled", st["subtitle"]),
+        Spacer(1, 12 * mm),
+        Paragraph(f'<font color="{warn.hexval()}"><b>Audit could not be completed: {esc(blocked.get("title", ""))}</b></font>',
+                  ParagraphStyle("w", parent=st["h2"], fontSize=14, leading=18)),
+        Paragraph(esc(blocked.get("detail", "")), st["body"]),
+        Spacer(1, 6 * mm),
+        Paragraph("What was attempted", st["h2"]),
+    ]
+    attempts = [
+        ("Start URL", meta.get("start_url", "")),
+        ("robots.txt", f"HTTP {site.get('site_files', {}).get('robots.txt', {}).get('status')}"),
+        ("Sitemaps read", str(len(meta.get("sitemaps_read", [])))),
+        ("URLs discovered", str(meta.get("urls_discovered", 0))),
+        ("URLs skipped for robots.txt", str(len(meta.get("skipped_by_robots", [])))),
+        ("Pages fetched", str(meta.get("pages_crawled", 0))),
+    ]
+    flow.append(table([[Paragraph(esc(k), st["cellb"]), Paragraph(esc(v), st["cell"])] for k, v in attempts],
+                      [50 * mm, 120 * mm], st, header=False, zebra=False))
+    hv = site.get("host_variants", [])
+    if hv:
+        flow.append(Spacer(1, 3 * mm))
+        rows = [[Paragraph("Host variant", st["cellb"]), Paragraph("Response", st["cellb"])]]
+        for h in hv:
+            rows.append([Paragraph(esc(h.get("url", "")), st["mono"]),
+                         Paragraph(esc(f"HTTP {h.get('status')}" if h.get("status") else (h.get("error") or "no response")[:90]), st["cell"])])
+        flow.append(table(rows, [70 * mm, 100 * mm], st))
+
+    flow.append(Paragraph("Evidence", st["h2"]))
+    for ev in (blocked.get("evidence") or [])[:6]:
+        for line in str(ev).splitlines()[:12]:
+            if line.strip() and not re.fullmatch(r"[#=\-\s]+", line):  # skip decorative separator lines
+                flow.append(Paragraph(esc(line.strip()), st["mono"]))
+        flow.append(Spacer(1, 2 * mm))
+    if blocked.get("whitelisted_agents"):
+        flow.append(Paragraph("Crawlers this site explicitly allows (from robots.txt)", st["h3"]))
+        flow.append(Paragraph(esc(", ".join(blocked["whitelisted_agents"][:30])), st["small"]))
+
+    flow.append(Paragraph("What you can do", st["h2"]))
+    for step in NEXT_STEPS.get(blocked.get("reason"), NEXT_STEPS["unknown"]):
+        flow.append(Paragraph("&bull; " + esc(step), st["body"]))
+    flow.append(Spacer(1, 8 * mm))
+    flow.append(Paragraph(
+        f'This report was produced by the open-source <link href="{REPO_URL}" color="{ACCENT.hexval()}">'
+        f'<b>{REPO_NAME}</b></link> for Claude Code. The auditor respects robots.txt and does not attempt to '
+        "bypass access controls; no site content was collected.", st["small"]))
+    doc.build(flow, onFirstPage=footer, onLaterPages=footer)
+
+
+def build_blocked_html(site, blocked, out_path):
+    meta = site.get("meta", {})
+    domain = urlparse(meta.get("root", "")).netloc
+    h = html.escape
+    steps = "".join(f"<li>{h(s)}</li>" for s in NEXT_STEPS.get(blocked.get("reason"), NEXT_STEPS["unknown"]))
+    evidence = "".join(f"<pre style='background:#F2F4F7;padding:10px;border-radius:6px;white-space:pre-wrap;font-size:12px'>{h(str(e))}</pre>"
+                       for e in (blocked.get("evidence") or [])[:6])
+    hv = "".join(f"<tr><td><code>{h(x.get('url', ''))}</code></td><td>{h('HTTP ' + str(x.get('status')) if x.get('status') else (x.get('error') or 'no response')[:90])}</td></tr>"
+                 for x in site.get("host_variants", []))
+    wl = ", ".join(blocked.get("whitelisted_agents", [])[:30])
+    doc = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SEO Audit - {h(domain)} (crawl blocked)</title>
+<style>body{{font:15px/1.5 system-ui,Segoe UI,Helvetica,Arial,sans-serif;color:#101828;max-width:860px;margin:40px auto;padding:0 20px}}
+h1{{font-size:28px;margin:0 0 4px}} h2{{font-size:20px;margin:32px 0 10px;border-bottom:1px solid #D0D5DD;padding-bottom:6px}}
+.muted{{color:#475467}} .warn{{color:#B54708;font-size:18px;font-weight:700;margin-top:24px}}
+table{{border-collapse:collapse;width:100%;font-size:13px}} td{{padding:6px 8px;border-bottom:1px solid #EAECF0;vertical-align:top}}
+code{{font-size:12px;background:#F2F4F7;padding:1px 4px;border-radius:3px}}</style></head><body>
+<h1>SEO Audit Report</h1><div class="muted">{h(domain)} &middot; {h(datetime.now().strftime('%d %b %Y'))} &middot; 0 pages crawled</div>
+<p class="warn">Audit could not be completed: {h(blocked.get('title', ''))}</p><p>{h(blocked.get('detail', ''))}</p>
+<h2>What was attempted</h2><table>
+<tr><td><b>Start URL</b></td><td>{h(meta.get('start_url', ''))}</td></tr>
+<tr><td><b>Sitemaps read</b></td><td>{len(meta.get('sitemaps_read', []))}</td></tr>
+<tr><td><b>URLs discovered</b></td><td>{meta.get('urls_discovered', 0)}</td></tr>
+<tr><td><b>URLs skipped for robots.txt</b></td><td>{len(meta.get('skipped_by_robots', []))}</td></tr>
+{hv}</table>
+<h2>Evidence</h2>{evidence}{('<p class="muted"><b>Crawlers this site explicitly allows:</b> ' + h(wl) + '</p>') if wl else ''}
+<h2>What you can do</h2><ul>{steps}</ul>
+<p class="muted" style="margin-top:40px;font-size:13px">This report was produced by the open-source <a href="{h(REPO_URL)}"><b>{h(REPO_NAME)}</b></a>
+for Claude Code. The auditor respects robots.txt and does not attempt to bypass access controls; no site content was collected.</p>
+</body></html>"""
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(doc)
+
+
 def build_html(site, reports, out_path):
     meta = site.get("meta", {})
     domain = urlparse(meta.get("root", "")).netloc
@@ -544,10 +672,6 @@ def main():
 
     with open(args.site, encoding="utf-8") as f:
         site = json.load(f)
-    reports = load_findings(args.findings_dir)
-    if not reports:
-        print(f"[render] no findings JSON in {args.findings_dir}", file=sys.stderr)
-        sys.exit(1)
 
     domain = urlparse(site.get("meta", {}).get("root", "")).netloc.replace("www.", "")
     out = args.out or os.path.join(
@@ -555,6 +679,23 @@ def main():
         f"seo-audit-{re.sub(r'[^a-z0-9]+', '-', domain.lower())}-{datetime.now().strftime('%Y-%m-%d')}.pdf",
     )
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+
+    # Nothing crawled: produce a short report explaining why, so the user still gets a deliverable.
+    blocked = site.get("meta", {}).get("crawl_blocked")
+    if blocked or site.get("meta", {}).get("pages_crawled", 0) == 0:
+        blocked = blocked or {"reason": "unknown", "title": "No pages could be crawled", "detail": "", "evidence": []}
+        build_blocked_pdf(site, blocked, out)
+        html_out = os.path.splitext(out)[0] + ".html"
+        build_blocked_html(site, blocked, html_out)
+        print(json.dumps({"pdf": os.path.abspath(out), "html": os.path.abspath(html_out),
+                          "crawl_blocked": blocked["reason"], "blocked_title": blocked["title"],
+                          "overall_score": None, "severity_counts": {}, "total_findings": 0}, indent=2))
+        return
+
+    reports = load_findings(args.findings_dir)
+    if not reports:
+        print(f"[render] no findings JSON in {args.findings_dir}", file=sys.stderr)
+        sys.exit(1)
     build_pdf(site, reports, out)
     html_out = os.path.splitext(out)[0] + ".html"
     build_html(site, reports, html_out)

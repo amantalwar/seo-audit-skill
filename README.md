@@ -95,6 +95,10 @@ same name also works and takes precedence. Never paste keys into the chat.
 
 Scores are heuristic prioritisation aids, not ranking predictions.
 
+If a site cannot be crawled at all (robots.txt disallows it, the server returns 403, or it's
+unreachable), you still get a short PDF stating exactly why, with the evidence and what the
+site owner can do about it. The auditor never bypasses robots.txt or bot protection.
+
 ## How it works
 
 ```

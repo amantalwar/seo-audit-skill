@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Marketplace for the talwar-seo-audit Claude Code plugin",
-    "version": "1.0.5"
+    "version": "1.0.6"
   },
   "plugins": [
     {
       "name": "talwar-seo-audit",
       "source": "./",
       "description": "Website SEO audit → prioritized PDF report with parallel specialist agents and Google-sourced recommendations.",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "author": { "name": "Aman Talwar" },
       "license": "MIT",
       "keywords": ["seo", "audit", "pdf"],

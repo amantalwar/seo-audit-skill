@@ -84,9 +84,15 @@ $PY "${CLAUDE_PLUGIN_ROOT}/scripts/crawl.py" "<url>" --max-pages <N> --out "<OUT
 
 The script prints progress to stderr and a JSON summary to stdout:
 `pages_crawled`, `site_signals` (`ecommerce`, `local`, `international` page counts,
-`jsonld_types`), `broken_links`. If `pages_crawled` is 0, stop and tell the user why
-(look at `site_files.robots.txt` and `host_variants` in site.json - usually the site
-blocks bots or the host is wrong).
+`jsonld_types`), `broken_links`, and `crawl_blocked` (null, or `{reason, title, detail,
+evidence}` when nothing could be crawled).
+
+**If `pages_crawled` is 0:** do not spawn any agents. Go straight to step 7 - the renderer
+detects the blocked crawl and produces a short PDF explaining what was attempted, why it
+failed (robots.txt notice, HTTP responses), and what the site owner can do. Then tell the
+user the `title` and `detail` from `crawl_blocked`, link the PDF, and stop. Never suggest
+`--ignore-robots` for a site the user does not own, and never retry with a different
+user agent to get around a block.
 
 ## 4. Choose which specialists run
 

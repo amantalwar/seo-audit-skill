@@ -383,6 +383,43 @@ def pagespeed(url):
     return out
 
 
+def diagnose_zero_pages(pages, skipped_by_robots, host_variants, site_files, urls_discovered):
+    """Explain why nothing was crawled, in a form the report can show a client."""
+    html_ok = [p for p in pages if p.get("status") == 200 and "html" in (p.get("content_type") or "").lower()]
+    if html_ok:
+        return None
+    statuses = [h.get("status") for h in host_variants]
+    errors = [h.get("error") for h in host_variants if h.get("error")]
+    robots = site_files.get("robots.txt", {})
+    robots_note = chr(10).join(l for l in (robots.get("content") or "").splitlines() if l.startswith("#"))[:600]
+    if all(s is None for s in statuses) and errors:
+        return {"reason": "unreachable",
+                "title": "The site could not be reached",
+                "detail": "Every host variant failed at the network level (DNS, TLS, or connection timeout).",
+                "evidence": errors[:4]}
+    if skipped_by_robots and not pages:
+        return {"reason": "robots",
+                "title": "robots.txt disallows automated crawling",
+                "detail": ("The site's robots.txt denies access to crawlers that are not explicitly whitelisted. "
+                           f"{len(skipped_by_robots)} discovered URL(s) were skipped in compliance with those rules."),
+                "evidence": [robots_note] if robots_note else [],
+                "also_http": [s for s in statuses if s and s >= 400],
+                "whitelisted_agents": re.findall(r"(?im)^user-agent:\s*(\S.*?)\s*$", robots.get("content") or "")[:40]}
+    if statuses and all((s or 0) >= 400 for s in statuses):
+        return {"reason": "http_forbidden",
+                "title": f"The server refused the crawler (HTTP {statuses[0]})",
+                "detail": "Every host variant returned an error status. The site is likely behind a bot-protection layer "
+                          "(e.g. a CDN/WAF challenge) or blocks unrecognised user agents.",
+                "evidence": [f"{h['url']} -> HTTP {h.get('status')}" for h in host_variants]}
+    if pages:
+        return {"reason": "no_html",
+                "title": "Pages were fetched but none were indexable HTML",
+                "detail": "Responses were non-HTML or non-200 for every URL tried.",
+                "evidence": [f"{p.get('url')} -> {p.get('status')} {p.get('content_type', '')}" for p in pages[:6]]}
+    return {"reason": "unknown", "title": "No pages could be crawled",
+            "detail": f"{urls_discovered} URL(s) were discovered but none produced an HTML page.", "evidence": []}
+
+
 def crawl(start_url, max_pages, respect_robots=True):
     if not start_url.startswith(("http://", "https://")):
         start_url = "https://" + start_url
@@ -478,7 +515,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.5",
+            "version": "1.0.6",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),
@@ -488,6 +525,7 @@ def crawl(start_url, max_pages, respect_robots=True):
             "skipped_by_robots": skipped_by_robots,
             "sitemaps_read": sm["sitemaps_read"],
             "sitemap_urls_found": len(sm["urls"]),
+            "crawl_blocked": diagnose_zero_pages(pages, skipped_by_robots, host_variants, site_files, len(seen)),
         },
         "site_files": site_files,
         "host_variants": host_variants,
@@ -526,6 +564,7 @@ def main():
         "pages_crawled": data["meta"]["pages_crawled"],
         "site_signals": data["site_signals"],
         "broken_links": len(data["broken_links"]),
+        "crawl_blocked": data["meta"].get("crawl_blocked"),
     }, indent=2))
 
 
