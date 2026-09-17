@@ -72,7 +72,9 @@ is missing and how to add it:
 |---|---|---|
 | `PAGESPEED_API_KEY` | Real-user Core Web Vitals (LCP / INP / CLS) and Lighthouse scores from Google PageSpeed Insights | Free - [get a key](https://developers.google.com/speed/docs/insights/v5/get-started) |
 
-Store a key from your own terminal (input is hidden, saved to `~/.talwar-seo-audit/.env`):
+Store a key from your own terminal (input is hidden, saved to `~/.talwar-seo-audit/.env`).
+**Windows:** paste into the hidden prompt with **right-click**, not Ctrl+V - if the paste
+doesn't come through, the script notices and offers a visible prompt instead.
 
 ```bash
 python scripts/keys.py set PAGESPEED_API_KEY

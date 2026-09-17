@@ -107,6 +107,31 @@ def cmd_status(as_json=False):
         print()
 
 
+def _looks_like_paste_failure(value):
+    # Windows consoles: Ctrl+V into a hidden prompt yields chr(22) (or nothing) instead of the clipboard
+    return len(value) < 20 or any(ord(c) < 32 for c in value)
+
+
+def _read_secret():
+    """Prompt for a key. Hidden input first; if the paste clearly failed (a Windows
+    getpass quirk with Ctrl+V), explain and fall back to a visible prompt."""
+    if os.name == "nt":
+        print("Tip: in a Windows console, paste into the hidden prompt with RIGHT-CLICK (Ctrl+V won't work).")
+    value = getpass.getpass("Paste the key (input hidden): ").strip()
+    if value and not _looks_like_paste_failure(value):
+        return value
+    print(f"That came through as {len(value)} character(s), so the paste did not work.")
+    print("Falling back to a VISIBLE prompt - the key will show on screen. Clear your terminal afterwards.")
+    try:
+        value = input("Paste the key (visible): ").strip()
+    except EOFError:
+        return ""
+    value = "".join(c for c in value if ord(c) >= 32)
+    if _looks_like_paste_failure(value):
+        sys.exit(f"Still only {len(value)} character(s) - not saving. API keys are typically 30-50 characters.")
+    return value
+
+
 def cmd_set(name):
     if name not in KEYS:
         sys.exit(f"Unknown key {name}. Known keys: {', '.join(KEYS)}")
@@ -115,7 +140,7 @@ def cmd_set(name):
                  "Do not pass keys through chat or command-line arguments.")
     print(f"{name}: {KEYS[name]['purpose']}")
     print(f"Get one at {KEYS[name]['get_it']}")
-    value = getpass.getpass("Paste the key (input hidden): ").strip()
+    value = _read_secret()
     if not value:
         sys.exit("Nothing entered; aborting.")
     os.makedirs(os.path.dirname(KEY_FILE), exist_ok=True)
