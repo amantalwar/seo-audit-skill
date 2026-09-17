@@ -478,7 +478,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.4",
+            "version": "1.0.5",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),

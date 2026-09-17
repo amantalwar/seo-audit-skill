@@ -68,6 +68,9 @@ RULE = colors.HexColor("#D0D5DD")
 BAND = colors.HexColor("#F2F4F7")
 ACCENT = colors.HexColor("#1D4ED8")
 
+REPO_URL = "https://github.com/amantalwar/seo-audit-skill"
+REPO_NAME = "Talwar SEO Audit Skill"
+
 # Category display order (agents not listed go last, alphabetically)
 CATEGORY_ORDER = [
     "Technical SEO", "Content Quality (E-E-A-T)", "Structured Data (Schema.org)",
@@ -300,7 +303,8 @@ def cover(site, reports, st, generated):
     ]))
     flow += [strip, Spacer(1, 20 * mm)]
     flow.append(Paragraph(
-        "This report was produced by the open-source <b>seo-audit-skill</b> for Claude Code. "
+        f'This report was produced by the open-source <link href="{REPO_URL}" color="{ACCENT.hexval()}">'
+        f'<b>{REPO_NAME}</b></link> for Claude Code. '
         "Findings are grounded in Google Search Central documentation; every recommendation "
         "includes a way to verify the fix. Scores are heuristic and intended for prioritisation, "
         "not as a ranking prediction.", st["small"]))
@@ -520,6 +524,10 @@ code{{font-size:12px;background:#F2F4F7;padding:1px 4px;border-radius:3px}}
             if src.get("url"):
                 parts.append(f"<dt>Source</dt><dd><a href='{h(src['url'])}'>{h(src.get('title') or src['url'])}</a></dd>")
             parts.append("</dl>")
+    parts.append(f"<p class='muted' style='margin-top:40px;font-size:13px'>This report was produced by the open-source "
+                 f"<a href='{h(REPO_URL)}'><b>{h(REPO_NAME)}</b></a> for Claude Code. Findings are grounded in Google Search Central "
+                 f"documentation; every recommendation includes a way to verify the fix. Scores are heuristic and intended for "
+                 f"prioritisation, not as a ranking prediction.</p>")
     parts.append("</body></html>")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write("".join(parts))
