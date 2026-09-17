@@ -125,11 +125,12 @@ def _tokens(text):
     return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if w not in _STOP and len(w) > 2}
 
 
-def dedupe_findings(reports, threshold=0.45):
+def dedupe_findings(reports, threshold=0.6):
     """Merge findings from different agents that describe the same issue.
 
     Two findings are duplicates when their title token sets overlap by >= threshold
-    (Jaccard) and they share at least one affected URL (or both have none). The
+    (overlap coefficient: |A∩B| / min(|A|,|B|), which tolerates one title being much
+    longer than the other) and they share at least one affected URL (or both have none). The
     higher-severity finding survives; it gains the other's affected URLs and a
     'also_flagged_by' note, and the duplicate is dropped from its report.
     """
@@ -146,9 +147,10 @@ def dedupe_findings(reports, threshold=0.45):
                 gt = _tokens(g["title"])
                 if not ft or not gt:
                     continue
-                jacc = len(ft & gt) / len(ft | gt)
-                fu, gu = set(f["affected_urls"]), set(g["affected_urls"])
-                if jacc >= threshold and (fu & gu or (not fu and not gu)):
+                overlap = len(ft & gt) / min(len(ft), len(gt))
+                fu = {u.rstrip("/") for u in f["affected_urls"]}
+                gu = {u.rstrip("/") for u in g["affected_urls"]}
+                if overlap >= threshold and (fu & gu or (not fu and not gu)):
                     match = g
                     break
             if match is None:

@@ -53,6 +53,7 @@ claude --plugin-dir ./seo-audit-skill
 | `--all` | off | Run all seven specialists even if the site doesn't look local / e-commerce / international. |
 | `--only` / `--skip` | - | Choose specialists explicitly. |
 | `--allow-live` | off | Let specialists fetch the live site for spot checks (default: crawl data only). |
+| `--no-keys` | off | Skip the prompt about missing optional API keys. |
 
 Examples:
 
@@ -62,11 +63,23 @@ Examples:
 /talwar-seo-audit https://shop.example.com --only seo-ecommerce,seo-schema
 ```
 
-Optional - richer Core Web Vitals data:
+### Optional API keys
+
+The audit needs no keys. Adding them unlocks extra data, and the skill tells you when one
+is missing and how to add it:
+
+| Key | Unlocks | Cost |
+|---|---|---|
+| `PAGESPEED_API_KEY` | Real-user Core Web Vitals (LCP / INP / CLS) and Lighthouse scores from Google PageSpeed Insights | Free - [get a key](https://developers.google.com/speed/docs/insights/v5/get-started) |
+
+Store a key from your own terminal (input is hidden, saved to `~/.talwar-seo-audit/.env`):
 
 ```bash
-export PAGESPEED_API_KEY=your_key   # https://developers.google.com/speed/docs/insights/v5/get-started
+python scripts/keys.py set PAGESPEED_API_KEY
 ```
+
+`python scripts/keys.py status` shows what's configured. An environment variable of the
+same name also works and takes precedence. Never paste keys into the chat.
 
 ## What the report contains
 
@@ -110,6 +123,7 @@ agents/*.md                     the seven specialists (generated from scripts/de
 scripts/crawl.py                crawler → site.json
 scripts/query.py                compact views of site.json for agents
 scripts/render_pdf.py           findings → PDF + HTML
+scripts/keys.py                 optional API key manager (status / set / unset)
 references/google-guidance.md   the only sources agents may cite (all URLs verified)
 ```
 

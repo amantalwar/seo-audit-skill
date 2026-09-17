@@ -338,9 +338,15 @@ def check_https_and_redirects(session, root):
 
 
 def pagespeed(url):
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from keys import apply_to_environ  # env var → ~/.talwar-seo-audit/.env → ./.env
+        apply_to_environ()
+    except ImportError:
+        pass
     key = os.environ.get("PAGESPEED_API_KEY")
     if not key:
-        return {"skipped": "PAGESPEED_API_KEY not set"}
+        return {"skipped": "PAGESPEED_API_KEY not set - run `python scripts/keys.py status` for how to add it"}
     out = {}
     for strategy in ("mobile", "desktop"):
         try:
@@ -467,7 +473,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),

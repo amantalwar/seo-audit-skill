@@ -22,6 +22,7 @@ parallel, merge their findings, and render the PDF. You do not do the SEO analys
 | `--skip a,b` | - | Never run these agents. |
 | `--allow-live` | off | Let agents fetch the live site for spot checks. Default is crawl-data only (faster, reproducible). |
 | `--ignore-robots` | off | Pass through to the crawler. Only for sites the user owns. |
+| `--no-keys` | off | Don't prompt about missing optional API keys; run with what's available. |
 
 Agent names: `seo-technical`, `seo-content`, `seo-schema`, `seo-geo`, `seo-local`,
 `seo-ecommerce`, `seo-international`.
@@ -43,8 +44,25 @@ If that fails, install them (tell the user you're doing it):
 $PY -m pip install -r "${CLAUDE_PLUGIN_ROOT}/scripts/requirements.txt"
 ```
 
-If `PAGESPEED_API_KEY` is set in the environment, Core Web Vitals field data will be
-included automatically; mention this in the final summary either way.
+### Optional API keys
+
+```bash
+$PY "${CLAUDE_PLUGIN_ROOT}/scripts/keys.py" status --json
+```
+
+For every key with `"set": false`, tell the user in one short block what it unlocks, that
+it's free (if `"free": true`), the `get_it` URL, and the exact command to store it:
+
+```bash
+$PY "${CLAUDE_PLUGIN_ROOT}/scripts/keys.py" set <KEY_NAME>
+```
+
+Then ask with AskUserQuestion: **"Continue without it"** (recommended for a first run) or
+**"I'll add it first"**. If they choose to add it, wait for them to say it's done, re-run
+`status --json`, and only then continue. **Never ask the user to paste a key into the chat**
+and never write a key into a file yourself - the `set` command prompts them privately in
+their own terminal. Skip this prompt entirely when every key is already set, or when the
+user passed `--no-keys`.
 
 ## 3. Crawl
 
@@ -124,7 +142,8 @@ Reply with:
 2. Overall score and severity counts.
 3. The **top 5** items from the action plan (title + severity + effort), read from the
    findings files (highest `severity`, then lowest `effort`).
-4. Which agents ran, pages crawled, and whether PageSpeed data was included.
+4. Which agents ran, pages crawled, and whether PageSpeed data was included (if it wasn't,
+   add the one-line hint: `keys.py set PAGESPEED_API_KEY` adds Core Web Vitals next time).
 5. One line: "Re-run with `--max-pages`, `--all`, or `--only` to change scope."
 
 Then offer to open the PDF. Keep the whole reply under ~25 lines - the detail lives in the PDF.
