@@ -1,6 +1,6 @@
 {
   "name": "talwar-seo-audit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Website SEO audit → prioritized PDF report. Crawls a site with no API keys, runs parallel specialist agents (technical, content/E-E-A-T, Schema.org, AI search/GEO, local, e-commerce, international), and cites Google's primary documentation for every recommendation.",
   "author": {
     "name": "Aman Talwar",

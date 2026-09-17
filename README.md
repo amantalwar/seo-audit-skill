@@ -141,6 +141,17 @@ The crawler identifies itself as `seo-audit-skill`, respects `robots.txt`, and w
 between requests. Only audit sites you own or have permission to audit. `--ignore-robots`
 exists for auditing your own staging sites and nothing else.
 
+## Releasing a change
+
+Claude Code's plugin manager only pulls a new version when the version number changes.
+After merging changes, bump `version` in **both** `.claude-plugin/plugin.json` and
+`.claude-plugin/marketplace.json`, then push. Users update with:
+
+```bash
+claude plugin marketplace update talwar-seo-audit-marketplace
+claude plugin update talwar-seo-audit@talwar-seo-audit-marketplace
+```
+
 ## Contributing
 
 Issues and pull requests are welcome. Keep findings evidence-based and sourced - a PR that
