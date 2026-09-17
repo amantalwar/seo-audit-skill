@@ -16,13 +16,16 @@ site unless the task prompt explicitly allows it.
 Start with these query views: `overview, pages, robots, links, perf, heads (for canonical/robots meta), images`.
 - **Protocol & host**: `host_variants` - do http:// and the non-canonical www/non-www host 301 to one canonical https host in a single hop? (Source: HTTPS blog / Redirects / Canonicalization)
 - **Status codes**: any 4xx/5xx in `pages` or `broken_links`; redirect chains > 1 hop; soft-404 patterns (200 with tiny word_count and "not found" in title).
-- **robots.txt**: present, parseable, not disallowing `/` for `*`, declares sitemap, doesn't block CSS/JS paths. Note `skipped_by_robots`.
+- **robots.txt**: present, parseable, not disallowing `/` for `*`, declares sitemap. Note `skipped_by_robots`.
+- **CSS/JS accessible to Googlebot** (Starter Guide: "Help Google find your content"): `overview` → `blocked_css_js_for_googlebot`. Any entry is `high` - Google can't render the page the way users see it.
 - **Sitemap**: exists (from robots or /sitemap.xml), HTTP 200, valid, has lastmod, URL count vs pages discovered; index vs single.
 - **Indexability**: `meta_robots` or `X-Robots-Tag` containing noindex on crawled pages; canonical missing, non-self, pointing to http, or cross-domain; canonical vs `final_url` mismatch.
-- **URL hygiene**: query-string duplicates, uppercase, trailing-slash inconsistency, very deep paths, non-descriptive slugs.
+- **URL hygiene** (Starter Guide: "Organize your site"): non-descriptive URLs (random IDs, numeric-only slugs), query-string duplicates of the same content, uppercase/trailing-slash inconsistency. Depth and subdirectory-vs-subdomain are NOT issues.
+- **One URL per piece of content**: the same content reachable at several URLs without a canonical or redirect - frame as consolidation, not a "duplicate content penalty".
 - **Mobile**: viewport meta missing/incorrect on any page.
 - **Performance signals**: `response_ms` > 1000, `bytes` > 1.5MB, `render_blocking_scripts` high, no `Content-Encoding`, missing `Cache-Control`, images without dimensions. If `pagespeed` data exists, use its field CWV (LCP ≤2.5s, INP ≤200ms, CLS ≤0.1 thresholds from web.dev) - that is stronger evidence than lab heuristics.
-- **Internal linking**: pages with `inbound_internal_links` ≤ 1, generic anchor text counts, nofollow on internal links.
+- **Internal linking & anchor text** (Starter Guide): pages with `inbound_internal_links` ≤ 1; `generic_anchor_count` ("click here", "read more") - the guide asks for anchor text that describes the target; nofollow on internal links.
+- **Outbound link qualification**: external links on pages with comments/forums/user content, or to untrusted sites, without `rel="nofollow"`/`ugc`/`sponsored` (`links.external` + `nofollow_count`). Cite qualify-outbound-links.
 - **Security headers** (low): HSTS missing when on https.
 - **Structured data validity** is NOT yours (seo-schema owns it) - skip it.
 ## Inputs (given in your task prompt)
@@ -74,5 +77,10 @@ Start with these query views: `overview, pages, robots, links, perf, heads (for 
    pages under one finding with `affected_urls`. Do not report things the crawl shows are fine.
 7. **Score** (0-100): start at 100; subtract ~25 per critical, ~12 per high, ~5 per medium,
    ~2 per low, floor at 0. Round to an integer.
-8. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
+8. **Starter Guide alignment.** REFERENCES ends with a section listing what Google's SEO
+   Starter Guide says does *not* matter (word count, heading order/count, meta keywords,
+   keywords in URLs, subdomain vs subdirectory, duplicate-content "penalties", E-E-A-T as a
+   ranking factor, link counts). Never file a finding based on one of those. If you see a
+   third-party "best practice" that the guide contradicts, the guide wins.
+9. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
    by severity. The orchestrator reads the file, not your reply.

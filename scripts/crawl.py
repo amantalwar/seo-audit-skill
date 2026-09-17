@@ -172,7 +172,15 @@ def parse_page(url, resp, elapsed_ms, root_netloc):
         "missing_alt": [i.get("src", "")[:200] for i in imgs if not i.get("alt")][:25],
         "lazy_loaded": sum(1 for i in imgs if i.get("loading") == "lazy"),
         "without_dimensions": sum(1 for i in imgs if not (i.get("width") and i.get("height"))),
+        # Samples so agents can judge whether alt text is *descriptive* (Starter Guide), not just present
+        "alt_samples": [{"src": i.get("src", "")[-80:], "alt": i.get("alt", "")[:120]} for i in imgs if i.get("alt")][:10],
     }
+    # Videos: the guide wants them on a standalone page near relevant text
+    page["videos"] = {
+        "video_tags": len(soup.find_all("video")),
+        "embeds": sum(1 for f in soup.find_all("iframe", src=True) if re.search(r"youtube|youtu\.be|vimeo|wistia|loom", f["src"], re.I)),
+    }
+    page["meta_keywords_present"] = bool(metas.get("keywords"))
 
     # --- Links -----------------------------------------------------------
     internal, external, nofollow = [], [], 0
@@ -213,6 +221,7 @@ def parse_page(url, resp, elapsed_ms, root_netloc):
     # --- Tech / performance hints ----------------------------------------
     scripts = soup.find_all("script", src=True)
     styles = soup.find_all("link", rel=lambda v: v and "stylesheet" in v)
+    page["resource_urls"] = [urljoin(resp.url, x.get("src") or x.get("href")) for x in (scripts[:15] + styles[:10]) if (x.get("src") or x.get("href"))]
     page["resources"] = {
         "scripts": len(scripts),
         "render_blocking_scripts": sum(1 for s in scripts if not (s.get("async") or s.get("defer") or s.get("type") == "module")),
@@ -395,6 +404,21 @@ def crawl(start_url, max_pages, respect_robots=True):
     for p in pages:
         p["inbound_internal_links"] = inbound.get(normalize(p["url"]), 0)
 
+    # Starter Guide: Google must be able to fetch the same CSS/JS as a browser.
+    # Test each first-party resource URL against robots.txt as Googlebot.
+    blocked_resources = []
+    if rp:
+        seen_res = set()
+        for p in pages:
+            for u in p.get("resource_urls", []):
+                if u in seen_res or not same_site(u, root_netloc):
+                    continue
+                seen_res.add(u)
+                if not rp.can_fetch("Googlebot", u):
+                    blocked_resources.append({"resource": u, "used_by": p["url"]})
+    for p in pages:
+        p.pop("resource_urls", None)
+
     home = next((p for p in pages if p.get("status") == 200 and "html" in p.get("content_type", "")), None)
 
     return {
@@ -413,6 +437,7 @@ def crawl(start_url, max_pages, respect_robots=True):
         "host_variants": host_variants,
         "pagespeed": pagespeed(home["final_url"]) if home else {"skipped": "no homepage"},
         "broken_links": broken_links,
+        "blocked_resources": blocked_resources[:50],
         "site_signals": {
             "ecommerce": sum(1 for p in pages if p.get("signals", {}).get("ecommerce")),
             "local": sum(1 for p in pages if p.get("signals", {}).get("local")),

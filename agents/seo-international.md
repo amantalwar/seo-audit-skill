@@ -72,5 +72,10 @@ Start with these query views: `hreflang, pages, heads, overview, robots`.
    pages under one finding with `affected_urls`. Do not report things the crawl shows are fine.
 7. **Score** (0-100): start at 100; subtract ~25 per critical, ~12 per high, ~5 per medium,
    ~2 per low, floor at 0. Round to an integer.
-8. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
+8. **Starter Guide alignment.** REFERENCES ends with a section listing what Google's SEO
+   Starter Guide says does *not* matter (word count, heading order/count, meta keywords,
+   keywords in URLs, subdomain vs subdirectory, duplicate-content "penalties", E-E-A-T as a
+   ranking factor, link counts). Never file a finding based on one of those. If you see a
+   third-party "best practice" that the guide contradicts, the guide wins.
+9. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
    by severity. The orchestrator reads the file, not your reply.

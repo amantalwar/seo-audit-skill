@@ -44,6 +44,7 @@ def overview(d):
         "host_variants": d["host_variants"],
         "site_signals": d["site_signals"],
         "broken_links": d["broken_links"],
+        "blocked_css_js_for_googlebot": d.get("blocked_resources", []),
         "pagespeed": d.get("pagespeed"),
         "status_counts": dict(Counter(str(p.get("status")) for p in d["pages"])),
     })
@@ -148,6 +149,11 @@ def images(d):
         print(f"{p['url']}: total={im.get('total')} missing_alt={len(im.get('missing_alt', []))} lazy={im.get('lazy_loaded')} no_dims={im.get('without_dimensions')}")
         for src in im.get("missing_alt", [])[:5]:
             print(f"    missing alt: {src}")
+        for a in im.get("alt_samples", [])[:5]:
+            print(f"    alt sample: {a['alt']!r}  ({a['src']})")
+        v = p.get("videos", {})
+        if v.get("video_tags") or v.get("embeds"):
+            print(f"    videos: <video>={v.get('video_tags')} embeds={v.get('embeds')} words_on_page={p.get('word_count')}")
 
 
 def perf(d):

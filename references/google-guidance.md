@@ -116,3 +116,32 @@ Official domains: `developers.google.com/search`, `support.google.com`, `web.dev
 2. Put the exact URL in `source.url` and a short human title in `source.title`.
 3. Never invent a URL. If unsure, use the section-level overview page listed above.
 4. Vendor guidance (llms.txt, OpenAI, Anthropic) is acceptable **only** for the AI search category and must be labelled as vendor guidance in the evidence text.
+
+## SEO Starter Guide alignment (read before filing any finding)
+
+Source: https://developers.google.com/search/docs/fundamentals/seo-starter-guide
+
+### What the guide asks for (report when missing)
+| Guide section | Checkable rule |
+|---|---|
+| Help Google find your content | Googlebot can fetch the same CSS/JS resources as browsers (robots.txt must not block them); site is discoverable (sitemap helps, not required). |
+| Organize your site | Descriptive URLs with meaningful words, not random IDs; related pages grouped in directories; each piece of content reachable at one URL (canonical or redirect for duplicates). |
+| Make your site interesting and useful | Easy-to-read content broken into paragraphs and sections with headings; unique (not copied) content; outdated content updated or removed; people-first writing; links to relevant resources with descriptive anchor text; `nofollow`/`ugc`/`sponsored` on links you don't vouch for and on all user-generated links; no ads/interstitials that block content. |
+| Title links | Title unique to the page, clear, concise, accurately describes it; may include business name and, for local businesses, location; must be a real `<title>` element. |
+| Snippets | Meta description short, unique per page, covers the page's most relevant points. |
+| Images | Sharp, high-quality images placed near relevant text; descriptive `alt` text explaining the image's relationship to the content. |
+| Videos | High-quality video on a standalone page near relevant text, with descriptive title/description. |
+
+### What the guide says does NOT matter - never file these as findings
+| Myth | Guide's words |
+|---|---|
+| Meta keywords tag | "Google Search doesn't use the keywords meta tag." Don't recommend adding it; its presence is harmless. |
+| Word count | "There's no magical word count target, minimum or maximum." Never cite a word count as the problem. Thin content is about lack of substance/uniqueness, and needs evidence from the text itself. |
+| Heading order / count / multiple H1s | "It doesn't matter if you're using them out of order" and "there's no magical, ideal amount." Only flag headings when a long page has none at all (readability), never for having 2 H1s or skipping H2→H4. |
+| Keywords in domain or URL path | "Hardly any effect." Recommend descriptive URLs for users, not for keywords. |
+| Domain TLD | Only matters for country targeting. |
+| Subdomain vs subdirectory | "Do whatever makes sense." |
+| Duplicate content penalty | "If you have some content that's accessible under multiple URLs, it's fine." Frame duplicates as a consolidation/canonical opportunity, never as a penalty risk. |
+| PageRank / link counts | "There's much more to Google Search than just links." Don't recommend link building for its own sake. |
+| E-E-A-T as a ranking factor | "No, it's not." E-E-A-T describes what quality raters look for; frame it as evidence of helpful, trustworthy content, never as a ranking signal to optimise. |
+| Keyword stuffing as a tactic | It's a spam-policy violation. Flag it if seen; never recommend keyword density. |

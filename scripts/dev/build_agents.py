@@ -58,7 +58,12 @@ CONTRACT = """
    pages under one finding with `affected_urls`. Do not report things the crawl shows are fine.
 7. **Score** (0-100): start at 100; subtract ~25 per critical, ~12 per high, ~5 per medium,
    ~2 per low, floor at 0. Round to an integer.
-8. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
+8. **Starter Guide alignment.** REFERENCES ends with a section listing what Google's SEO
+   Starter Guide says does *not* matter (word count, heading order/count, meta keywords,
+   keywords in URLs, subdomain vs subdirectory, duplicate-content "penalties", E-E-A-T as a
+   ranking factor, link counts). Never file a finding based on one of those. If you see a
+   third-party "best practice" that the guide contradicts, the guide wins.
+9. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
    by severity. The orchestrator reads the file, not your reply.
 """
 
@@ -72,13 +77,16 @@ AGENTS = {
         "checklist": """
 - **Protocol & host**: `host_variants` - do http:// and the non-canonical www/non-www host 301 to one canonical https host in a single hop? (Source: HTTPS blog / Redirects / Canonicalization)
 - **Status codes**: any 4xx/5xx in `pages` or `broken_links`; redirect chains > 1 hop; soft-404 patterns (200 with tiny word_count and "not found" in title).
-- **robots.txt**: present, parseable, not disallowing `/` for `*`, declares sitemap, doesn't block CSS/JS paths. Note `skipped_by_robots`.
+- **robots.txt**: present, parseable, not disallowing `/` for `*`, declares sitemap. Note `skipped_by_robots`.
+- **CSS/JS accessible to Googlebot** (Starter Guide: "Help Google find your content"): `overview` → `blocked_css_js_for_googlebot`. Any entry is `high` - Google can't render the page the way users see it.
 - **Sitemap**: exists (from robots or /sitemap.xml), HTTP 200, valid, has lastmod, URL count vs pages discovered; index vs single.
 - **Indexability**: `meta_robots` or `X-Robots-Tag` containing noindex on crawled pages; canonical missing, non-self, pointing to http, or cross-domain; canonical vs `final_url` mismatch.
-- **URL hygiene**: query-string duplicates, uppercase, trailing-slash inconsistency, very deep paths, non-descriptive slugs.
+- **URL hygiene** (Starter Guide: "Organize your site"): non-descriptive URLs (random IDs, numeric-only slugs), query-string duplicates of the same content, uppercase/trailing-slash inconsistency. Depth and subdirectory-vs-subdomain are NOT issues.
+- **One URL per piece of content**: the same content reachable at several URLs without a canonical or redirect - frame as consolidation, not a "duplicate content penalty".
 - **Mobile**: viewport meta missing/incorrect on any page.
 - **Performance signals**: `response_ms` > 1000, `bytes` > 1.5MB, `render_blocking_scripts` high, no `Content-Encoding`, missing `Cache-Control`, images without dimensions. If `pagespeed` data exists, use its field CWV (LCP ≤2.5s, INP ≤200ms, CLS ≤0.1 thresholds from web.dev) - that is stronger evidence than lab heuristics.
-- **Internal linking**: pages with `inbound_internal_links` ≤ 1, generic anchor text counts, nofollow on internal links.
+- **Internal linking & anchor text** (Starter Guide): pages with `inbound_internal_links` ≤ 1; `generic_anchor_count` ("click here", "read more") - the guide asks for anchor text that describes the target; nofollow on internal links.
+- **Outbound link qualification**: external links on pages with comments/forums/user content, or to untrusted sites, without `rel="nofollow"`/`ugc`/`sponsored` (`links.external` + `nofollow_count`). Cite qualify-outbound-links.
 - **Security headers** (low): HSTS missing when on https.
 - **Structured data validity** is NOT yours (seo-schema owns it) - skip it.
 """,
@@ -90,14 +98,16 @@ AGENTS = {
         "role": "You are a content strategist who evaluates pages the way Google's 'helpful content' guidance and the Search Quality Rater Guidelines describe: is this made for people, does it demonstrate experience/expertise, is it trustworthy?",
         "views": "heads, content, pages, overview",
         "checklist": """
-- **Title links**: missing, duplicate (heads shows [DUPLICATE]), too long (>60 chars likely truncated) or too short/generic ("Home"), keyword-stuffed, not describing the page. (Source: Title links)
-- **Meta descriptions / snippets**: missing, duplicate, >160 chars, boilerplate. (Source: Snippets)
-- **Heading structure**: 0 or >1 H1, H1 duplicates title exactly on every page, no H2s on long pages, headings used for styling.
-- **Thin content**: `word_count` < ~150 on pages meant to rank (not utility pages); near-duplicate text_samples across pages.
-- **Helpful-content self-assessment** (apply the questions in 'Creating helpful content'): does the text_sample show first-hand experience, original information, or is it generic/summarised? Is there a clear primary purpose per page?
-- **E-E-A-T signals**: `author_byline`, `dates_present`, About/Contact/Privacy pages present in internal links, org identity clear on homepage, citations to sources for factual claims (external links on informational pages).
-- **Readability**: very long sentences, wall-of-text without H2s (infer from text_sample and heading counts).
-- **Open Graph / social**: og:title/description/image missing (low severity, cite site-names/snippets for the general principle; label as `info` if no primary source fits).
+- **Title links** (Starter Guide + Title links doc): missing, duplicate (heads shows [DUPLICATE]), boilerplate ("Home", "Untitled"), not describing the page, keyword-stuffed. Very long titles may be rewritten by Google - mention only as `low`. The guide suggests including the business name and, for local businesses, the location.
+- **Meta descriptions / snippets**: missing, duplicate across pages, boilerplate, not covering the page's main points. Length is a `low` concern at most.
+- **Readability & organisation** (Starter Guide: "easy-to-read and well organized"): long pages (judge from text_sample) with *no* headings at all, wall-of-text without paragraphs. Do NOT flag heading order, heading counts, or multiple H1s - the guide says these don't matter.
+- **Unique, substantive content**: near-identical `text_sample` across pages; pages that are clearly copied/boilerplate; pages with no real content beyond navigation. Never cite word count as the reason - the guide says there is no target. Say what is missing in substance instead.
+- **Helpful, people-first content** (creating-helpful-content self-assessment): does the text show first-hand experience or original information, or is it generic? Clear primary purpose per page? Written for readers or for search engines (keyword stuffing = spam policy)?
+- **Freshness**: `dates_present` false on informational pages; obviously stale references in text_sample (old years, discontinued products). The guide asks that outdated content be updated or removed.
+- **Trust signals** (E-E-A-T is NOT a ranking factor - frame as evidence of trustworthy content): `author_byline` on articles, About/Contact/Privacy reachable from internal links, organisation clearly identified on the homepage, sources cited for factual claims (external links on informational pages).
+- **Images & video** (Starter Guide): `images` view → alt text missing, or present but non-descriptive (filenames, "image", keyword lists) - use `alt_samples`; videos on pages with almost no surrounding text (`videos` + `word_count`).
+- **Ads / interstitials**: only if the text_sample or `iframes` count strongly suggests content is buried under ads; otherwise skip (crawl can't see layout).
+- **Open Graph / social**: og:title/description/image missing - `info` only (no Google ranking doc covers it).
 - Do NOT assess schema markup, speed, or hreflang - other agents own those.
 """,
     },

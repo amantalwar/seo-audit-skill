@@ -14,14 +14,16 @@ site unless the task prompt explicitly allows it.
 
 ## What to check
 Start with these query views: `heads, content, pages, overview`.
-- **Title links**: missing, duplicate (heads shows [DUPLICATE]), too long (>60 chars likely truncated) or too short/generic ("Home"), keyword-stuffed, not describing the page. (Source: Title links)
-- **Meta descriptions / snippets**: missing, duplicate, >160 chars, boilerplate. (Source: Snippets)
-- **Heading structure**: 0 or >1 H1, H1 duplicates title exactly on every page, no H2s on long pages, headings used for styling.
-- **Thin content**: `word_count` < ~150 on pages meant to rank (not utility pages); near-duplicate text_samples across pages.
-- **Helpful-content self-assessment** (apply the questions in 'Creating helpful content'): does the text_sample show first-hand experience, original information, or is it generic/summarised? Is there a clear primary purpose per page?
-- **E-E-A-T signals**: `author_byline`, `dates_present`, About/Contact/Privacy pages present in internal links, org identity clear on homepage, citations to sources for factual claims (external links on informational pages).
-- **Readability**: very long sentences, wall-of-text without H2s (infer from text_sample and heading counts).
-- **Open Graph / social**: og:title/description/image missing (low severity, cite site-names/snippets for the general principle; label as `info` if no primary source fits).
+- **Title links** (Starter Guide + Title links doc): missing, duplicate (heads shows [DUPLICATE]), boilerplate ("Home", "Untitled"), not describing the page, keyword-stuffed. Very long titles may be rewritten by Google - mention only as `low`. The guide suggests including the business name and, for local businesses, the location.
+- **Meta descriptions / snippets**: missing, duplicate across pages, boilerplate, not covering the page's main points. Length is a `low` concern at most.
+- **Readability & organisation** (Starter Guide: "easy-to-read and well organized"): long pages (judge from text_sample) with *no* headings at all, wall-of-text without paragraphs. Do NOT flag heading order, heading counts, or multiple H1s - the guide says these don't matter.
+- **Unique, substantive content**: near-identical `text_sample` across pages; pages that are clearly copied/boilerplate; pages with no real content beyond navigation. Never cite word count as the reason - the guide says there is no target. Say what is missing in substance instead.
+- **Helpful, people-first content** (creating-helpful-content self-assessment): does the text show first-hand experience or original information, or is it generic? Clear primary purpose per page? Written for readers or for search engines (keyword stuffing = spam policy)?
+- **Freshness**: `dates_present` false on informational pages; obviously stale references in text_sample (old years, discontinued products). The guide asks that outdated content be updated or removed.
+- **Trust signals** (E-E-A-T is NOT a ranking factor - frame as evidence of trustworthy content): `author_byline` on articles, About/Contact/Privacy reachable from internal links, organisation clearly identified on the homepage, sources cited for factual claims (external links on informational pages).
+- **Images & video** (Starter Guide): `images` view → alt text missing, or present but non-descriptive (filenames, "image", keyword lists) - use `alt_samples`; videos on pages with almost no surrounding text (`videos` + `word_count`).
+- **Ads / interstitials**: only if the text_sample or `iframes` count strongly suggests content is buried under ads; otherwise skip (crawl can't see layout).
+- **Open Graph / social**: og:title/description/image missing - `info` only (no Google ranking doc covers it).
 - Do NOT assess schema markup, speed, or hreflang - other agents own those.
 ## Inputs (given in your task prompt)
 - `SITE_JSON` - path to the crawl output. **Do not Read the whole file.** Use the query helper:
@@ -72,5 +74,10 @@ Start with these query views: `heads, content, pages, overview`.
    pages under one finding with `affected_urls`. Do not report things the crawl shows are fine.
 7. **Score** (0-100): start at 100; subtract ~25 per critical, ~12 per high, ~5 per medium,
    ~2 per low, floor at 0. Round to an integer.
-8. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
+8. **Starter Guide alignment.** REFERENCES ends with a section listing what Google's SEO
+   Starter Guide says does *not* matter (word count, heading order/count, meta keywords,
+   keywords in URLs, subdomain vs subdirectory, duplicate-content "penalties", E-E-A-T as a
+   ranking factor, link counts). Never file a finding based on one of those. If you see a
+   third-party "best practice" that the guide contradicts, the guide wins.
+9. Write OUT_JSON, then reply with **only** a two-line summary: score and the number of findings
    by severity. The orchestrator reads the file, not your reply.
