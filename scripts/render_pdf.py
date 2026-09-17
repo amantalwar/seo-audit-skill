@@ -107,7 +107,63 @@ def load_findings(findings_dir):
             )
         reports.append(data)
     reports.sort(key=lambda r: (CATEGORY_ORDER.index(r["category"]) if r["category"] in CATEGORY_ORDER else 99, r["category"]))
+    merged = dedupe_findings(reports)
+    if merged:
+        print(f"[render] merged {merged} duplicate finding(s) reported by more than one agent", file=sys.stderr)
     return reports
+
+
+# ----------------------------------------------------------------------------
+# Cross-agent de-duplication
+# ----------------------------------------------------------------------------
+
+_STOP = {"the", "a", "an", "and", "or", "of", "to", "on", "in", "is", "are", "not", "no", "for",
+         "with", "at", "by", "from", "its", "it", "this", "that", "page", "pages", "site"}
+
+
+def _tokens(text):
+    return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if w not in _STOP and len(w) > 2}
+
+
+def dedupe_findings(reports, threshold=0.45):
+    """Merge findings from different agents that describe the same issue.
+
+    Two findings are duplicates when their title token sets overlap by >= threshold
+    (Jaccard) and they share at least one affected URL (or both have none). The
+    higher-severity finding survives; it gains the other's affected URLs and a
+    'also_flagged_by' note, and the duplicate is dropped from its report.
+    """
+    survivors = []  # (finding, report)
+    dropped = 0
+    for r in reports:
+        kept = []
+        for f in r["findings"]:
+            ft = _tokens(f["title"])
+            match = None
+            for g, gr in survivors:
+                if gr is r:
+                    continue
+                gt = _tokens(g["title"])
+                if not ft or not gt:
+                    continue
+                jacc = len(ft & gt) / len(ft | gt)
+                fu, gu = set(f["affected_urls"]), set(g["affected_urls"])
+                if jacc >= threshold and (fu & gu or (not fu and not gu)):
+                    match = g
+                    break
+            if match is None:
+                survivors.append((f, r))
+                kept.append(f)
+            else:
+                # Keep the more severe one; if equal keep the earlier (already in survivors)
+                if SEVERITY_ORDER.get(f["severity"], 9) < SEVERITY_ORDER.get(match["severity"], 9):
+                    # Promote f: swap contents into the survivor slot so ids/categories stay stable
+                    match.update({k: f[k] for k in ("title", "severity", "effort", "evidence", "recommendation", "how_to_test", "source", "priority")})
+                match["affected_urls"] = sorted(set(match["affected_urls"]) | set(f["affected_urls"]))
+                match.setdefault("also_flagged_by", []).append(f"{r['category']} ({f['id']})")
+                dropped += 1
+        r["findings"] = kept
+    return dropped
 
 
 def overall_score(reports):
@@ -337,6 +393,8 @@ def finding_block(f, st):
         rows.append([Paragraph("Fix", st["label"]), Paragraph(esc(f["recommendation"]), st["cell"])])
     if f["how_to_test"]:
         rows.append([Paragraph("Test", st["label"]), Paragraph(esc(f["how_to_test"]), st["cell"])])
+    if f.get("also_flagged_by"):
+        rows.append([Paragraph("Also by", st["label"]), Paragraph(esc("; ".join(f["also_flagged_by"])), st["small"])])
     src = f.get("source") or {}
     if src.get("url"):
         rows.append([Paragraph("Source", st["label"]),
@@ -455,6 +513,8 @@ code{{font-size:12px;background:#F2F4F7;padding:1px 4px;border-radius:3px}}
             for k, label in (("evidence", "Evidence"), ("recommendation", "Fix"), ("how_to_test", "Test")):
                 if f.get(k):
                     parts.append(f"<dt>{label}</dt><dd>{h(f[k])}</dd>")
+            if f.get("also_flagged_by"):
+                parts.append(f"<dt>Also by</dt><dd>{h('; '.join(f['also_flagged_by']))}</dd>")
             if src.get("url"):
                 parts.append(f"<dt>Source</dt><dd><a href='{h(src['url'])}'>{h(src.get('title') or src['url'])}</a></dd>")
             parts.append("</dl>")

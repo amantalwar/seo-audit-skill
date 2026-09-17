@@ -284,6 +284,39 @@ def fetch_site_files(session, root):
     return out
 
 
+def sitemap_urls(session, root, site_files, root_netloc, limit=500):
+    """Return page URLs listed in the site's sitemaps, following sitemap-index files one level.
+    Used to seed the crawl so pages that aren't linked from the homepage are still audited."""
+    candidates = list(site_files.get("robots.txt", {}).get("sitemaps") or [])
+    for name in ("sitemap.xml", "sitemap_index.xml"):
+        if site_files.get(name, {}).get("status") == 200:
+            candidates.append(site_files[name]["url"])
+    seen_maps, pages = set(), []
+    queue = deque(candidates)
+    depth = {c: 0 for c in candidates}
+    while queue and len(pages) < limit:
+        sm = queue.popleft()
+        if sm in seen_maps:
+            continue
+        seen_maps.add(sm)
+        body = site_files.get("sitemap.xml", {}).get("content") if sm == site_files.get("sitemap.xml", {}).get("url") else None
+        if body is None:
+            r, _, _ = fetch(session, sm)
+            if r is None or r.status_code != 200:
+                continue
+            body = r.text
+            time.sleep(0.2)
+        locs = re.findall(r"<loc>\s*(.*?)\s*</loc>", body, re.I | re.S)
+        if "<sitemapindex" in body.lower():
+            if depth.get(sm, 0) < 1:
+                for child in locs[:20]:
+                    depth[child] = depth.get(sm, 0) + 1
+                    queue.append(child)
+        else:
+            pages.extend(l for l in locs if same_site(l, root_netloc))
+    return {"sitemaps_read": sorted(seen_maps), "urls": pages[:limit]}
+
+
 def check_https_and_redirects(session, root):
     """Check http->https and www/non-www consolidation."""
     parsed = urlparse(root)
@@ -364,12 +397,22 @@ def crawl(start_url, max_pages, respect_robots=True):
 
     queue = deque([normalize(start_url)])
     seen = {normalize(start_url)}
+    log("Reading sitemaps to seed the crawl")
+    sm = sitemap_urls(session, root, site_files, root_netloc)
+    for u in sm["urls"]:
+        n = normalize(u)
+        if n not in seen:
+            seen.add(n)
+            queue.append(n)
+    log(f"Sitemaps read: {len(sm['sitemaps_read'])}, URLs seeded: {len(sm['urls'])}")
     pages, broken_links, skipped_by_robots = [], [], []
     inbound = {}  # url -> count of internal links pointing to it
 
     while queue and len(pages) < max_pages:
         url = queue.popleft()
-        if rp and not rp.can_fetch(USER_AGENT, url):
+        # normalize() strips trailing slashes, but robots rules like "Disallow: /wp-admin/"
+        # only match the slashed form - so test both spellings.
+        if rp and not (rp.can_fetch(USER_AGENT, url) and rp.can_fetch(USER_AGENT, url + "/")):
             skipped_by_robots.append(url)
             continue
         log(f"[{len(pages)+1}/{max_pages}] {url}")
@@ -432,6 +475,8 @@ def crawl(start_url, max_pages, respect_robots=True):
             "pages_crawled": len(pages),
             "urls_discovered": len(seen),
             "skipped_by_robots": skipped_by_robots,
+            "sitemaps_read": sm["sitemaps_read"],
+            "sitemap_urls_found": len(sm["urls"]),
         },
         "site_files": site_files,
         "host_variants": host_variants,
@@ -443,9 +488,9 @@ def crawl(start_url, max_pages, respect_robots=True):
             "local": sum(1 for p in pages if p.get("signals", {}).get("local")),
             "international": sum(1 for p in pages if p.get("signals", {}).get("international")),
             "pages_with_jsonld": sum(1 for p in pages if p.get("jsonld")),
+            # Walks nested blocks (e.g. Yoast/RankMath "@graph") so LocalBusiness/Product inside a graph count
             "jsonld_types": sorted({
-                str(b.get("@type")) for p in pages for b in p.get("jsonld", [])
-                if isinstance(b, dict) and b.get("@type")
+                str(t) for p in pages for b in p.get("jsonld", []) for t in _walk_types(b)
             }),
         },
         "pages": pages,
