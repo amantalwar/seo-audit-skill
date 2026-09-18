@@ -131,8 +131,13 @@ def robots(d):
     print("\n--- per-page meta robots / x-robots-tag:")
     for p in html_pages(d):
         xr = p.get("headers", {}).get("X-Robots-Tag")
-        if p.get("meta_robots") or xr:
-            print(f"  {p['url']}: meta={p.get('meta_robots')!r} header={xr!r}")
+        if p.get("meta_robots") or p.get("meta_googlebot") or xr:
+            print(f"  {p['url']}: meta={p.get('meta_robots')!r} googlebot={p.get('meta_googlebot')!r} header={xr!r}")
+    print("\n--- snippet/AI-feature visibility controls (nosnippet, max-snippet, data-nosnippet):")
+    for p in html_pages(d):
+        sc = p.get("snippet_controls", {})
+        if sc.get("nosnippet") or sc.get("max_snippet") or sc.get("data_nosnippet_elements"):
+            print(f"  {p['url']}: {sc}")
     print("--- skipped by robots:", d["meta"].get("skipped_by_robots"))
 
 

@@ -133,7 +133,19 @@ def parse_page(url, resp, elapsed_ms, root_netloc):
     page["meta_description"] = metas.get("description", "")
     page["meta_description_length"] = len(page["meta_description"])
     page["meta_robots"] = metas.get("robots", "")
+    page["meta_googlebot"] = metas.get("googlebot", "")  # Google also honours a Googlebot-specific meta tag
     page["viewport"] = metas.get("viewport", "")
+
+    # Directives that control snippets/previews in Search *and* AI features (AI Overviews, AI Mode) -
+    # per developers.google.com/search/docs/appearance/ai-features, robots.txt/Googlebot access plus
+    # these tags are the site owner's controls for AI inclusion. Pull from both meta sources + header.
+    robots_directives = f"{page['meta_robots']} {page['meta_googlebot']} {page['headers'].get('X-Robots-Tag', '')}".lower()
+    page["snippet_controls"] = {
+        "nosnippet": "nosnippet" in robots_directives,
+        "max_snippet": next((d.strip() for d in robots_directives.split(",") if "max-snippet" in d), None),
+        "max_image_preview": next((d.strip() for d in robots_directives.split(",") if "max-image-preview" in d), None),
+        "data_nosnippet_elements": len(soup.find_all(attrs={"data-nosnippet": True})),
+    }
     page["og"] = {k: v for k, v in metas.items() if k.startswith("og:")}
     page["twitter"] = {k: v for k, v in metas.items() if k.startswith("twitter:")}
 
@@ -515,7 +527,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.6",
+            "version": "1.0.7",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),
