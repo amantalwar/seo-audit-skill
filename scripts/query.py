@@ -144,6 +144,11 @@ def robots(d):
 def content(d):
     for p in html_pages(d):
         print(f"=== {p['url']}  words={p.get('word_count')} author_byline={p['signals'].get('author_byline')} dates={p['signals'].get('dates_present')} h1={p.get('headings', {}).get('h1')}")
+        mc = p.get("main_content") or {}
+        if mc:
+            print(f"  main_content: byline={mc.get('byline_text')!r} byline_links_to_author_page={mc.get('byline_links_to_author_page')} "
+                  f"ai_disclosure_text={mc.get('ai_disclosure_text')} tab_panels={mc.get('tab_panels')} accordions={mc.get('accordions')} "
+                  f"hidden_text_words={mc.get('hidden_text_words')} h1={mc.get('visible_h1')!r}")
         print(p.get("text_sample", "")[:1200])
         print()
 

@@ -17,6 +17,7 @@ Official domains: `developers.google.com/search`, `support.google.com`, `web.dev
 | Spam policies | https://developers.google.com/search/docs/essentials/spam-policies |
 | How Search works | https://developers.google.com/search/docs/fundamentals/how-search-works |
 | Creating helpful, reliable, people-first content | https://developers.google.com/search/docs/fundamentals/creating-helpful-content |
+| Creating helpful content - **main content (effort, originality, talent or skill, accuracy) and Who/How/Why**; sections updated by Google in 2026, cite for main-content and authorship findings | https://developers.google.com/search/docs/fundamentals/creating-helpful-content |
 | E-E-A-T explained (Google blog) | https://developers.google.com/search/blog/2022/12/google-raters-guidelines-e-e-a-t |
 | Search Quality Rater Guidelines (PDF) | https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf |
 
@@ -145,3 +146,15 @@ Source: https://developers.google.com/search/docs/fundamentals/seo-starter-guide
 | PageRank / link counts | "There's much more to Google Search than just links." Don't recommend link building for its own sake. |
 | E-E-A-T as a ranking factor | "No, it's not." E-E-A-T describes what quality raters look for; frame it as evidence of helpful, trustworthy content, never as a ranking signal to optimise. |
 | Keyword stuffing as a tactic | It's a spam-policy violation. Flag it if seen; never recommend keyword density. |
+
+### Helpful-content guidance alignment (updated 2026)
+
+Source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+
+| Rule from the doc | How to apply it |
+|---|---|
+| Main content is any part of the page that directly serves its purpose: text and media, interactive tools, user-generated contributions, tabbed/expanded sections, and titles/headings. | Judge the page's primary answer or tool, not boilerplate. Tabs and accordions are fine when content stays accessible - never recommend removing them. |
+| Main content is assessed on effort, originality, talent or skill, and accuracy. | File content findings against one of these four, quoting the page text. Unsupervised mass-produced or auto-generated text shows little effort; crediting sources does not replace original effort. |
+| Who, how and why: clear authorship, disclosure of how content was made where readers would wonder, and a primary purpose of helping people. | Check bylines and author pages. Fabricated creators (invented names, fake bios, AI headshots, false credentials) are deceptive and a low-quality signal. |
+| Trust is the most important E-E-A-T element; YMYL topics get extra weight. | Weight accuracy and sourcing findings higher on health, finance, safety and civic pages. |
+| No preferred word count; changing dates or adding/removing content only to look fresh does not help. | Never recommend either (see "does NOT matter" above). |

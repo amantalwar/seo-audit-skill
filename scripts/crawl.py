@@ -165,6 +165,31 @@ def parse_page(url, resp, elapsed_ms, root_netloc):
     }
     page["h1_count"] = len(page["headings"]["h1"])
 
+    # --- Main-content / authorship signals (read before nav/footer are stripped) ---
+    # Google's helpful-content doc: who (byline links to author background), how (AI/automation
+    # disclosure), and main content inside tabs/accordions (acceptable if accessible).
+    raw_text = text_of(soup.find("body")) if soup.find("body") else ""
+    byline_el = soup.find(attrs={"rel": "author"}) or soup.find(class_=re.compile("author|byline", re.I))
+    byline_link = None
+    if byline_el is not None:
+        a = byline_el if byline_el.name == "a" and byline_el.get("href") else byline_el.find("a", href=True)
+        byline_link = a.get("href") if a else None
+    tab_panels = soup.find_all(attrs={"role": "tabpanel"})
+    accordions = soup.find_all("details")
+    h1_el = soup.find("h1")
+    page["main_content"] = {
+        "byline_text": text_of(byline_el)[:120] if byline_el is not None else None,
+        "byline_links_to_author_page": bool(byline_link),
+        "byline_href": (byline_link or "")[:200] or None,
+        "ai_disclosure_text": bool(re.search(
+            r"\b(ai[- ]generated|generated (?:by|with|using) ai|written (?:by|with|using) ai|ai[- ]assisted|created (?:by|with|using) ai|machine[- ]generated|how (?:we|this) (?:test|review|research|wrote))\b",
+            raw_text, re.I)),
+        "tab_panels": len(tab_panels),
+        "accordions": len(accordions),
+        "hidden_text_words": sum(len(text_of(t).split()) for t in tab_panels + accordions),
+        "visible_h1": text_of(h1_el)[:160] if h1_el is not None else None,
+    }
+
     # Strip nav/footer/script for a rough "main content" word count
     body = soup.find("body")
     if body:
@@ -527,7 +552,7 @@ def crawl(start_url, max_pages, respect_robots=True):
     return {
         "meta": {
             "tool": "seo-audit-skill",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "start_url": start_url,
             "root": root,
             "crawled_at": datetime.now(timezone.utc).isoformat(),
